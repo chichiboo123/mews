@@ -323,9 +323,9 @@
       const res = await fetch(`/.netlify/functions/news?q=${encoded}`, {
         signal: activeController.signal,
       });
-      if (!res.ok) throw new Error(`서버 응답 오류 (${res.status})`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `서버 응답 오류 (${res.status})`);
 
-      const data = await res.json();
       const articles = data.articles || [];
 
       if (articles.length === 0) {

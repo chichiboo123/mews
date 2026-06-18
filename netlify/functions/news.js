@@ -61,8 +61,10 @@ function buildUrl(q, extra) {
 
 async function fetchFeed(url) {
   const res = await fetch(url, { headers: HEADERS });
-  if (!res.ok) return [];
-  return parseItems(await res.text());
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  if (!text.includes("<item>")) return [];
+  return parseItems(text);
 }
 
 function json(statusCode, body, maxAge = 0) {
@@ -82,12 +84,20 @@ exports.handler = async (event) => {
   if (!q) return json(400, { error: "검색어가 필요합니다." });
 
   // 기본 + 시간대 변형으로 더 많은 기사 확보 (피드당 100개 한계 보완)
-  const variants = ["", "when:1y", "when:5y"];
+  const variants = ["", "when:1y", "when:1m"];
 
   try {
-    const lists = await Promise.all(
-      variants.map((v) => fetchFeed(buildUrl(q, v)).catch(() => []))
+    const settled = await Promise.allSettled(
+      variants.map((v) => fetchFeed(buildUrl(q, v)))
     );
+
+    const allFailed = settled.every((r) => r.status === "rejected");
+    if (allFailed) {
+      const firstErr = settled[0].reason?.message || "fetch 실패";
+      return json(502, { error: `뉴스를 가져올 수 없습니다 (${firstErr})` });
+    }
+
+    const lists = settled.map((r) => (r.status === "fulfilled" ? r.value : []));
 
     const seen = new Set();
     const articles = [];
