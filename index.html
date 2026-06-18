@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>뮤스 (Mews) · 뮤지컬 뉴스</title>
+  <meta
+    name="description"
+    content="좋아하는 뮤지컬을 검색하면 실시간 관련 뉴스를 별빛 카드로 모아 보여드려요."
+  />
+
+  <!-- Pretendard GOV -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/sun-typeface/PretendardGOV@v1.1.0/dist/web/static/pretendardGOV.min.css"
+  />
+  <!-- Google Material Icons -->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">본문 바로가기</a>
+
+  <header class="header">
+    <div class="header__inner">
+      <h1 class="header__title">
+        <span class="material-icons-round header__logo-icon" aria-hidden="true"
+          >auto_stories</span
+        >
+        <span class="header__name">뮤스<span class="header__name-en">Mews</span></span>
+        <span class="material-icons-round header__logo-icon header__logo-icon--star" aria-hidden="true"
+          >auto_awesome</span
+        >
+      </h1>
+      <p class="header__tagline">
+        별빛 사이에서 당신의 뮤지컬 이야기를 찾아드려요.
+      </p>
+    </div>
+  </header>
+
+  <main id="main" class="main">
+    <section class="search" aria-label="뮤지컬 검색">
+      <form class="search__form" id="searchForm" role="search">
+        <label class="search__label" for="searchInput">뮤지컬 작품명 검색</label>
+        <div class="search__field">
+          <span class="material-icons-round search__field-icon" aria-hidden="true"
+            >search</span
+          >
+          <input
+            type="search"
+            id="searchInput"
+            class="search__input"
+            name="query"
+            placeholder="예: 마틸다, 위키드, 영웅..."
+            autocomplete="off"
+            enterkeyhint="search"
+          />
+          <button type="submit" class="search__button" id="searchButton">
+            <span class="material-icons-round" aria-hidden="true">travel_explore</span>
+            <span>검색</span>
+          </button>
+        </div>
+      </form>
+
+      <div class="tags" aria-label="추천 검색어">
+        <span class="tags__label">
+          <span class="material-icons-round" aria-hidden="true">local_offer</span>
+          추천 작품
+        </span>
+        <div class="tags__list" id="tagList"></div>
+      </div>
+    </section>
+
+    <section class="results" aria-live="polite" aria-busy="false" id="results">
+      <!-- 상태 / 결과가 여기에 렌더링됩니다 -->
+      <div class="state state--intro" id="introState">
+        <span class="material-icons-round state__icon" aria-hidden="true">nights_stay</span>
+        <p class="state__title">검색을 시작해 보세요</p>
+        <p class="state__desc">
+          좋아하는 뮤지컬 작품명을 입력하거나 추천 작품을 눌러보세요.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <a
+      class="footer__link"
+      href="https://litt.ly/chichiboo"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Created by. 교육뮤지컬 꿈꾸는 치수쌤
+    </a>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
