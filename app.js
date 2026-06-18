@@ -1,5 +1,5 @@
 /* =========================================================
-   뮤스 (Muse) — Musical News
+   뮤스 (Mews) — Musical News
    Netlify Functions(news / summary)를 통해 구글 뉴스를 가져와
    카드 형태로 렌더링합니다. (요약 · 정렬 · 더보기 · 결과 내 검색)
    ========================================================= */
@@ -13,7 +13,13 @@
   const form = document.getElementById("searchForm");
   const input = document.getElementById("searchInput");
   const resetButton = document.getElementById("resetButton");
+  const homeButton = document.getElementById("homeButton");
   const results = document.getElementById("results");
+
+  // 입력값 유무에 따라 초기화 버튼 표시
+  function syncResetButton() {
+    resetButton.hidden = input.value.trim() === "";
+  }
 
   // ---- 상태 ----
   let allArticles = []; // 검색 결과 전체
@@ -75,7 +81,7 @@
     results.innerHTML = `
       <div class="state state--loading">
         <div class="spinner" role="status" aria-label="검색 중"></div>
-        <p class="state__title">뮤즈가 검색 중입니다...</p>
+        <p class="state__title">뮤스가 검색 중입니다...</p>
         <p class="state__desc">당신을 위한 뮤지컬 소식을 가져오고 있어요.</p>
       </div>`;
   }
@@ -305,6 +311,7 @@
     }
 
     currentKeyword = keyword;
+    syncResetButton();
     const encoded = encodeURIComponent(`${keyword} 뮤지컬`); // 검색 품질 향상
 
     if (activeController) activeController.abort();
@@ -359,6 +366,7 @@
     refineTerm = "";
     currentKeyword = "";
     input.value = "";
+    syncResetButton();
     showIntro();
     input.focus();
   }
@@ -369,5 +377,7 @@
     runSearch(input.value);
   });
 
+  input.addEventListener("input", syncResetButton);
   resetButton.addEventListener("click", resetAll);
+  homeButton.addEventListener("click", resetAll);
 })();

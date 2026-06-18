@@ -1,8 +1,8 @@
 /* =========================================================
-   뮤스 (Muse) — 기사 요약(리드) 함수
+   뮤스 (Mews) — 기사 요약(리드) 함수
    구글 뉴스의 암호화된 리다이렉트 링크를 batchexecute 엔드포인트로
    해석해 원문 URL을 얻은 뒤, 기사 페이지의 리드(메타 설명/첫 문단)를
-   추출합니다. 실패 시 빈 문자열을 반환하여 제목만 표시합니다.
+   추출합니다. 한글 인코딩(EUC-KR 등) 자동 감지 및 잡음 제거 포함.
    ========================================================= */
 
 const HEADERS = {
@@ -12,7 +12,7 @@ const HEADERS = {
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 };
 
-// 타임아웃이 적용된 fetch → 텍스트 (실패 시 null)
+// 타임아웃이 적용된 fetch → 텍스트 (UTF-8 가정, 구글 페이지용)
 async function fetchText(url, options, ms) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
@@ -22,6 +22,46 @@ async function fetchText(url, options, ms) {
     return await res.text();
   } catch (_) {
     return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// 타임아웃 fetch → 문자셋 자동 감지 후 디코딩한 HTML (기사 페이지용)
+async function fetchHtml(url, ms) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, {
+      redirect: "follow",
+      headers: HEADERS,
+      signal: ctrl.signal,
+    });
+    if (!res.ok) return "";
+    const buf = Buffer.from(await res.arrayBuffer());
+
+    // 1) Content-Type 헤더 → 2) <meta charset> 순으로 문자셋 결정
+    let charset = (res.headers.get("content-type") || "").match(
+      /charset=["']?([\w-]+)/i
+    )?.[1];
+    if (!charset) {
+      const head = buf.slice(0, 4096).toString("latin1");
+      charset =
+        head.match(/<meta[^>]+charset=["']?\s*([\w-]+)/i)?.[1] ||
+        head.match(/charset=["']?([\w-]+)/i)?.[1];
+    }
+    charset = (charset || "utf-8").toLowerCase().trim();
+    if (["ms949", "cp949", "ksc5601", "ks_c_5601-1987"].includes(charset)) {
+      charset = "euc-kr";
+    }
+
+    try {
+      return new TextDecoder(charset).decode(buf);
+    } catch (_) {
+      return new TextDecoder("utf-8").decode(buf);
+    }
+  } catch (_) {
+    return "";
   } finally {
     clearTimeout(timer);
   }
@@ -70,7 +110,8 @@ async function decodeViaBatch(id) {
     sg[1],
   ];
   const body =
-    "f.req=" + encodeURIComponent(JSON.stringify([[["Fbv4je", JSON.stringify(inner)]]]));
+    "f.req=" +
+    encodeURIComponent(JSON.stringify([[["Fbv4je", JSON.stringify(inner)]]]));
 
   const resp = await fetchText(
     "https://news.google.com/_/DotsSplashUi/data/batchexecute",
@@ -107,9 +148,10 @@ async function resolveRealUrl(target) {
   return (await decodeViaBatch(id)) || decodeLegacy(id);
 }
 
-// 엔티티 정리 + 공백 정규화 + 길이 제한
-function clean(text) {
-  const t = String(text || "")
+// ---- 텍스트 정제 ----
+function normalize(text) {
+  return String(text || "")
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
@@ -117,37 +159,81 @@ function clean(text) {
     .replace(/&#x27;/gi, "'")
     .replace(/&apos;/g, "'")
     .replace(/&nbsp;/g, " ")
+    .replace(/&#\d+;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+// 앞쪽 군더더기(매체 속보 머리말, [단독]/[속보] 등) 제거
+function stripPrefix(t) {
+  let out = t;
+  for (let i = 0; i < 3; i++) {
+    out = out
+      .replace(/^\[[^\]]{1,15}\]\s*/, "")
+      .replace(/^【[^】]{1,15}】\s*/, "")
+      .replace(/^[가-힣A-Za-z0-9.]{2,12}\s*(속보|단독)\s+/, "")
+      .trim();
+  }
+  return out;
+}
+
+// 깨진 인코딩 / 코드성 텍스트 판별
+function looksBroken(t) {
+  if (/�/.test(t)) return true;
+  const allowed =
+    t.match(
+      /[ -~가-힣　-〿＀-￯ㄱ-ㅎㅏ-ㅣ·…—\n]/g
+    ) || [];
+  return allowed.length < t.length * 0.85;
+}
+
+function looksLikeCode(t) {
+  return /[{}]|function\s*\(|=>|var\s|window\.|document\.|stockData|\.push\(|;\s*$/.test(
+    t
+  );
+}
+
+function finalize(raw) {
+  const t = stripPrefix(normalize(raw));
+  if (t.length < 25 || looksBroken(t) || looksLikeCode(t)) return "";
   if (t.length <= 180) return t;
   return t.slice(0, 177).trimEnd() + "…";
 }
 
 function pickDescription(html) {
+  // 1) 메타 태그 (가장 신뢰도 높은 리드)
   const patterns = [
-    /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i,
-    /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i,
-    /<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i,
-    /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i,
-    /<meta[^>]+name=["']twitter:description["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']*)["']/i,
+    /<meta[^>]+content=["']([^"']*)["'][^>]+property=["']og:description["']/i,
+    /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i,
+    /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["']/i,
+    /<meta[^>]+name=["']twitter:description["'][^>]+content=["']([^"']*)["']/i,
   ];
   for (const re of patterns) {
     const m = html.match(re);
-    if (m && m[1] && m[1].trim().length > 20) return clean(m[1]);
+    if (m && m[1]) {
+      const text = finalize(m[1]);
+      if (text) return text;
+    }
   }
 
-  // 메타가 없으면 본문 첫 문단(들)을 리드로 사용
-  const paragraphs = html.match(/<p[^>]*>([\s\S]*?)<\/p>/gi) || [];
+  // 2) 메타가 없으면 본문 첫 문단 (스크립트/스타일 제거 후)
+  const body = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ");
+
+  const paragraphs = body.match(/<p[^>]*>([\s\S]*?)<\/p>/gi) || [];
   for (const p of paragraphs) {
-    const text = clean(p.replace(/<[^>]+>/g, " "));
-    if (text.length > 60) return text;
+    const text = finalize(p.replace(/<[^>]+>/g, " "));
+    if (text && text.length >= 60) return text;
   }
   return "";
 }
 
 async function extractSummary(url) {
-  const html = await fetchText(url, { redirect: "follow", headers: HEADERS }, 6000);
+  const html = await fetchHtml(url, 6000);
   if (!html) return "";
   return pickDescription(html);
 }
@@ -170,7 +256,6 @@ exports.handler = async (event) => {
 
   try {
     const real = await resolveRealUrl(target);
-    // 원문 URL을 못 구하면 구글의 일반 안내문을 보여주지 않고 빈 값 반환
     if (!real || real.includes("news.google.com")) return json(200, { summary: "" });
     return json(200, { summary: await extractSummary(real) });
   } catch (_) {
