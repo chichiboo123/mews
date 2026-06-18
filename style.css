@@ -241,6 +241,40 @@ button {
   font-size: 1.25rem;
 }
 
+/* 초기화 버튼 */
+.search__actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+.reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-soft);
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: var(--radius-pill);
+  transition: all 0.16s ease;
+}
+.reset-btn .material-icons-round {
+  font-size: 1.05rem;
+  color: var(--color-rose);
+}
+.reset-btn:hover {
+  color: var(--color-night);
+  background: var(--color-surface);
+  border-color: #ece5d6;
+  box-shadow: var(--shadow-sm);
+}
+.reset-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
 /* ---------- Results / State ---------- */
 .results {
   margin-top: 8px;
@@ -595,7 +629,7 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin: 0 0 10px;
+  margin: 10px 0 0;
   font-size: 0.8rem;
   color: var(--color-text-faint);
 }
@@ -618,12 +652,6 @@ button {
   padding: 8px 16px;
   border-radius: var(--radius-pill);
   transition: all 0.16s ease;
-}
-.footer__link::before {
-  content: "favorite";
-  font-family: "Material Icons Round";
-  font-size: 0.95rem;
-  color: var(--color-rose);
 }
 .footer__link:hover {
   color: var(--color-night);

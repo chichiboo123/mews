@@ -12,6 +12,7 @@
   // ---- DOM 참조 ----
   const form = document.getElementById("searchForm");
   const input = document.getElementById("searchInput");
+  const resetButton = document.getElementById("resetButton");
   const results = document.getElementById("results");
 
   // ---- 상태 ----
@@ -60,6 +61,15 @@
   }
 
   // ---- 상태 화면 ----
+  function showIntro() {
+    results.setAttribute("aria-busy", "false");
+    results.innerHTML = `
+      <div class="state state--intro">
+        <span class="material-icons-round state__icon" aria-hidden="true">nights_stay</span>
+        <p class="state__title">뮤지컬 작품명을 검색해 보세요</p>
+      </div>`;
+  }
+
   function showLoading() {
     results.setAttribute("aria-busy", "true");
     results.innerHTML = `
@@ -339,9 +349,25 @@
     }
   }
 
+  // ---- 초기화 ----
+  function resetAll() {
+    if (activeController) activeController.abort();
+    allArticles = [];
+    filtered = [];
+    shownCount = 0;
+    sortOrder = "latest";
+    refineTerm = "";
+    currentKeyword = "";
+    input.value = "";
+    showIntro();
+    input.focus();
+  }
+
   // ---- 이벤트 바인딩 ----
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     runSearch(input.value);
   });
+
+  resetButton.addEventListener("click", resetAll);
 })();

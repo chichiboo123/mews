@@ -9,6 +9,10 @@
     content="좋아하는 뮤지컬을 검색하면 실시간 관련 뉴스를 카드로 모아 보여드려요."
   />
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+
   <!-- Pretendard GOV -->
   <link
     rel="stylesheet"
@@ -55,7 +59,7 @@
             id="searchInput"
             class="search__input"
             name="query"
-            placeholder="예: 마틸다, 위키드, 영웅..."
+            placeholder="뮤지컬 작품명을 입력하세요"
             autocomplete="off"
             enterkeyhint="search"
           />
@@ -66,25 +70,24 @@
         </div>
       </form>
 
+      <div class="search__actions">
+        <button type="button" class="reset-btn" id="resetButton">
+          <span class="material-icons-round" aria-hidden="true">restart_alt</span>
+          초기화
+        </button>
+      </div>
     </section>
 
     <section class="results" aria-live="polite" aria-busy="false" id="results">
       <!-- 상태 / 결과가 여기에 렌더링됩니다 -->
       <div class="state state--intro" id="introState">
         <span class="material-icons-round state__icon" aria-hidden="true">nights_stay</span>
-        <p class="state__title">뮤지컬을 검색해 보세요</p>
-        <p class="state__desc">
-          작품명을 입력하고 검색 버튼을 누르세요.
-        </p>
+        <p class="state__title">뮤지컬 작품명을 검색해 보세요</p>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <p class="footer__source">
-      <span class="material-icons-round" aria-hidden="true">travel_explore</span>
-      뉴스 데이터는 <strong>Google 뉴스 검색</strong> 결과를 기반으로 제공됩니다.
-    </p>
     <a
       class="footer__link"
       href="https://litt.ly/chichiboo"
@@ -93,6 +96,10 @@
     >
       Created by. 교육뮤지컬 꿈꾸는 치수쌤
     </a>
+    <p class="footer__source">
+      <span class="material-icons-round" aria-hidden="true">travel_explore</span>
+      뉴스 데이터는 <strong>Google 뉴스 검색</strong> 결과를 기반으로 제공됩니다.
+    </p>
   </footer>
 
   <script src="app.js" defer></script>
