@@ -1,14 +1,4 @@
-# 뮤스 (Mews) — Netlify 배포 설정
-# 정적 사이트이므로 별도 빌드 과정 없이 루트를 그대로 발행합니다.
-
 [build]
   publish = "."
   command = ""
-
-# 프록시 규칙은 _redirects 파일에서도 관리하지만,
-# netlify.toml 에서도 명시해 우선순위를 보장합니다.
-[[redirects]]
-  from = "/google-news/*"
-  to = "https://news.google.com/rss/search?:splat"
-  status = 200
-  force = true
+  functions = "netlify/functions"
