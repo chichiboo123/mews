@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +8,8 @@
     name="description"
     content="좋아하는 뮤지컬을 검색하면 실시간 관련 뉴스를 카드로 모아 보여드려요."
   />
+  <meta name="theme-color" content="#5b6f9c" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0f1320" media="(prefers-color-scheme: dark)" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -25,21 +27,45 @@
   />
 
   <link rel="stylesheet" href="style.css" />
+
+  <!-- 테마 깜빡임 방지: 렌더 전에 저장된 테마 적용 -->
+  <script>
+    (() => {
+      try {
+        const saved = localStorage.getItem("mews-theme");
+        const theme =
+          saved ||
+          (window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (_) {}
+    })();
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">본문 바로가기</a>
 
   <header class="header">
     <div class="header__inner">
+      <button
+        type="button"
+        class="theme-toggle"
+        id="themeToggle"
+        aria-label="다크 모드 전환"
+        title="테마 전환"
+      >
+        <span class="material-icons-round theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">light_mode</span>
+        <span class="material-icons-round theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">dark_mode</span>
+      </button>
+
       <h1 class="header__title">
         <button type="button" class="header__home" id="homeButton" aria-label="처음 화면으로">
-          <span class="material-icons-round header__logo-icon" aria-hidden="true"
-            >auto_stories</span
-          >
+          <span class="header__logo" aria-hidden="true">
+            <span class="material-icons-round header__logo-icon">auto_stories</span>
+            <span class="material-icons-round header__logo-icon header__logo-icon--star">auto_awesome</span>
+          </span>
           <span class="header__name">뮤스<span class="header__name-en">Mews</span></span>
-          <span class="material-icons-round header__logo-icon header__logo-icon--star" aria-hidden="true"
-            >auto_awesome</span
-          >
         </button>
       </h1>
       <p class="header__tagline">
@@ -66,7 +92,7 @@
             enterkeyhint="search"
           />
           <button type="button" class="search__clear" id="resetButton" aria-label="초기화" hidden>
-            <span class="material-icons-round" aria-hidden="true">restart_alt</span>
+            <span class="material-icons-round" aria-hidden="true">close</span>
           </button>
           <button type="submit" class="search__button" id="searchButton">
             <span class="material-icons-round" aria-hidden="true">travel_explore</span>
@@ -81,6 +107,8 @@
       <div class="state state--intro" id="introState">
         <span class="material-icons-round state__icon" aria-hidden="true">nights_stay</span>
         <p class="state__title">뮤지컬 작품명을 검색해 보세요</p>
+        <p class="state__desc">관심 있는 작품의 최신 뉴스를 카드로 모아 드릴게요.</p>
+        <div class="suggest" id="suggest" aria-label="추천 검색어"></div>
       </div>
     </section>
   </main>
@@ -98,6 +126,10 @@
       뉴스 데이터는 <strong>Google 뉴스 검색</strong> 결과를 기반으로 제공됩니다.
     </p>
   </footer>
+
+  <button type="button" class="scroll-top" id="scrollTop" aria-label="맨 위로" hidden>
+    <span class="material-icons-round" aria-hidden="true">keyboard_arrow_up</span>
+  </button>
 
   <script src="app.js" defer></script>
 </body>
