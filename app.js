@@ -61,8 +61,8 @@
     results.innerHTML = `
       <div class="state state--loading">
         <div class="spinner" role="status" aria-label="검색 중"></div>
-        <p class="state__title">은하수 탐색 중...</p>
-        <p class="state__desc">별빛 사이에서 뮤지컬 소식을 모으고 있어요.</p>
+        <p class="state__title">뮤스가 검색 중입니다...</p>
+        <p class="state__desc">당신을 위한 뮤지컬 소식을 가져오고 있어요.</p>
       </div>`;
   }
 
@@ -71,7 +71,7 @@
     results.innerHTML = `
       <div class="state state--error">
         <span class="material-icons-round state__icon" aria-hidden="true">cloud_off</span>
-        <p class="state__title">소식을 불러오지 못했어요</p>
+        <p class="state__title">뉴스를 불러오지 못했습니다</p>
         <p class="state__desc">${escapeHTML(message)}</p>
       </div>`;
   }
@@ -81,8 +81,8 @@
     results.innerHTML = `
       <div class="state">
         <span class="material-icons-round state__icon" aria-hidden="true">search_off</span>
-        <p class="state__title">관련 뉴스를 찾지 못했어요</p>
-        <p class="state__desc">‘${escapeHTML(keyword)}’에 대한 뮤지컬 소식이 아직 없어요. 다른 작품을 검색해 보세요.</p>
+        <p class="state__title">관련 뉴스가 없습니다</p>
+        <p class="state__desc">’${escapeHTML(keyword)}’ 뮤지컬에 대한 최신 뉴스를 찾지 못했어요. 다른 작품을 검색해 보세요.</p>
       </div>`;
   }
 
