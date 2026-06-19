@@ -1,0 +1,12 @@
+# 의존성 / 빌드 산출물
+node_modules/
+.netlify/
+
+# 환경변수 (네이버 API 키 등) — 절대 커밋 금지
+.env
+.env.*
+!.env.example
+
+# OS / 에디터
+.DS_Store
+*.log
