@@ -209,10 +209,10 @@
     return allArticles.reduce((n, a) => n + (a.provider === p ? 1 : 0), 0);
   }
 
-  // 출처 필터 칩 HTML (출처가 2종 이상일 때만 노출)
+  // 출처 필터 칩 HTML (결과가 있을 때 항상 노출)
   function providerFilterHtml() {
     const present = presentProviders();
-    if (present.length < 2) return "";
+    if (present.length === 0) return "";
     const chips = present
       .map((p) => {
         const pm = PROVIDER_META[p];
