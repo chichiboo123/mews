@@ -267,15 +267,6 @@
       ? `<span class="card__provider" title="${pm.label}" aria-label="출처: ${pm.label}">${pm.svg}</span>`
       : "";
 
-    // 공식 요약이 있는 카드는 '요약' 태그로 구분
-    // naver: API 스니펫(Naver측 축약), rss: 신문사 RSS 전문 description
-    const summaryTooltip = a.provider === "rss"
-      ? "신문사 RSS 공식 요약 (전문)"
-      : "네이버 공식 스니펫 (Naver 제공 축약문)";
-    const summaryTag = a.summary
-      ? `<span class="card__tag" title="${summaryTooltip}">요약</span>`
-      : "";
-
     // 그리드 내 위치 기준 진입 애니메이션 지연 (과하지 않게 캡)
     const delay = Math.min(i, PAGE_SIZE - 1) * 45;
 
@@ -288,7 +279,6 @@
             <span class="material-icons-round" aria-hidden="true">newspaper</span>
             ${escapeHTML(a.source)}
           </span>
-          ${summaryTag}
           ${providerBadge}
           <span class="card__link-icon" aria-hidden="true">
             <span class="material-icons-round">open_in_new</span>
