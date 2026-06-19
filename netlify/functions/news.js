@@ -74,21 +74,54 @@ function normKey(title) {
 }
 
 // 원문 링크 호스트에서 표시용 매체명 추정 (네이버 응답엔 매체명 필드가 없음)
+// 더 구체적인 서브도메인(예: biz.chosun.com)을 먼저 매칭하도록 길이순 정렬해 사용.
 const HOST_NAME = {
+  // 종합일간
   "chosun.com": "조선일보", "donga.com": "동아일보", "joongang.co.kr": "중앙일보",
-  "hani.co.kr": "한겨레", "khan.co.kr": "경향신문", "hankyung.com": "한국경제",
-  "mk.co.kr": "매일경제", "seoul.co.kr": "서울신문", "yna.co.kr": "연합뉴스",
-  "newsis.com": "뉴시스", "news1.kr": "뉴스1", "sbs.co.kr": "SBS",
-  "kbs.co.kr": "KBS", "imbc.com": "MBC", "nocutnews.co.kr": "노컷뉴스",
-  "heraldcorp.com": "헤럴드경제", "edaily.co.kr": "이데일리", "mt.co.kr": "머니투데이",
+  "joins.com": "중앙일보", "hani.co.kr": "한겨레", "khan.co.kr": "경향신문",
+  "hankookilbo.com": "한국일보", "kmib.co.kr": "국민일보", "munhwa.com": "문화일보",
+  "seoul.co.kr": "서울신문", "segye.com": "세계일보", "kukinews.com": "쿠키뉴스",
+  "naeil.com": "내일신문",
+  // 통신
+  "yna.co.kr": "연합뉴스", "yonhapnewstv.co.kr": "연합뉴스TV",
+  "newsis.com": "뉴시스", "news1.kr": "뉴스1",
+  // 방송
+  "sbs.co.kr": "SBS", "kbs.co.kr": "KBS", "imbc.com": "MBC", "ytn.co.kr": "YTN",
+  "jtbc.co.kr": "JTBC", "jtbc.com": "JTBC", "mbn.co.kr": "MBN",
+  "ichannela.com": "채널A", "tvchosun.com": "TV조선", "nocutnews.co.kr": "노컷뉴스",
+  // 경제
+  "mk.co.kr": "매일경제", "hankyung.com": "한국경제", "edaily.co.kr": "이데일리",
+  "mt.co.kr": "머니투데이", "fnnews.com": "파이낸셜뉴스", "asiae.co.kr": "아시아경제",
+  "sedaily.com": "서울경제", "heraldcorp.com": "헤럴드경제", "ajunews.com": "아주경제",
+  "biz.chosun.com": "조선비즈", "newspim.com": "뉴스핌", "ebn.co.kr": "EBN",
+  "econovill.com": "이코노믹리뷰", "dt.co.kr": "디지털타임스", "etnews.com": "전자신문",
+  "inews24.com": "아이뉴스24", "dealsite.co.kr": "딜사이트",
+  // 스포츠·연예
   "sportschosun.com": "스포츠조선", "sportsseoul.com": "스포츠서울",
-  "osen.co.kr": "OSEN", "tvreport.co.kr": "TV리포트", "newsen.com": "뉴스엔",
+  "sports.donga.com": "스포츠동아", "osen.co.kr": "OSEN", "newsen.com": "뉴스엔",
+  "tvreport.co.kr": "TV리포트", "xportsnews.com": "엑스포츠뉴스",
+  "mydaily.co.kr": "마이데일리", "isplus.com": "일간스포츠",
+  "star.mt.co.kr": "스타뉴스", "spotvnews.co.kr": "스포티비뉴스",
+  "dispatch.co.kr": "디스패치", "ize.co.kr": "아이즈",
+  // 인터넷·기타
+  "ohmynews.com": "오마이뉴스", "pressian.com": "프레시안",
+  "mediatoday.co.kr": "미디어오늘", "newdaily.co.kr": "뉴데일리",
+  "dailian.co.kr": "데일리안", "ibabynews.com": "베이비뉴스",
+  "tf.co.kr": "더팩트", "m-i.kr": "매일일보", "gukjenews.com": "국제뉴스",
+  "kyongbuk.co.kr": "경북일보", "gnnews.co.kr": "경남일보", "knnews.co.kr": "경남신문",
+  "kado.net": "강원도민일보", "kwnews.co.kr": "강원일보", "jejunews.com": "제주일보",
+  "joongdo.co.kr": "중도일보", "kihoilbo.co.kr": "기호일보",
 };
+const HOST_KEYS = Object.keys(HOST_NAME).sort((a, b) => b.length - a.length);
+
 function sourceFromUrl(url) {
   try {
     const host = new URL(url).hostname.replace(/^www\./, "").replace(/^m\./, "");
-    for (const key in HOST_NAME) if (host.endsWith(key)) return HOST_NAME[key];
-    const base = host.replace(/\.(co\.kr|com|kr|net|org)$/i, "");
+    for (const key of HOST_KEYS) {
+      if (host === key || host.endsWith("." + key)) return HOST_NAME[key];
+    }
+    // 미등록 매체: 도메인 핵심부만 노출 (예: example.co.kr → example)
+    const base = host.replace(/\.(co\.kr|or\.kr|go\.kr|com|kr|net|org)$/i, "");
     return base ? base.split(".").pop() : "뉴스";
   } catch (_) {
     return "뉴스";
