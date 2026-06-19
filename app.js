@@ -268,8 +268,12 @@
       : "";
 
     // 공식 요약이 있는 카드는 '요약' 태그로 구분
+    // naver: API 스니펫(Naver측 축약), rss: 신문사 RSS 전문 description
+    const summaryTooltip = a.provider === "rss"
+      ? "신문사 RSS 공식 요약 (전문)"
+      : "네이버 공식 스니펫 (Naver 제공 축약문)";
     const summaryTag = a.summary
-      ? `<span class="card__tag" title="공식 요약 제공">요약</span>`
+      ? `<span class="card__tag" title="${summaryTooltip}">요약</span>`
       : "";
 
     // 그리드 내 위치 기준 진입 애니메이션 지연 (과하지 않게 캡)

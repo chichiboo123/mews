@@ -247,7 +247,7 @@ function parsePublisherItems(xml, source) {
     items.push({
       title,
       link: decode(tag(chunk, "link")) || decode(tag(chunk, "guid")),
-      summary: cleanText(tag(chunk, "description"), 280),
+      summary: cleanText(tag(chunk, "description"), 0), // RSS description 전문 그대로
       pubDate: tag(chunk, "pubDate") || tag(chunk, "dc:date"),
       source,
       provider: "rss",
