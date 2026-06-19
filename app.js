@@ -34,6 +34,7 @@
   let sortOrder = "latest"; // latest | oldest
   let refineTerm = ""; // 결과 내 검색어
   let currentKeyword = ""; // 표시용 키워드
+  let activeProviders = new Set(); // 활성화된 출처 필터 (다중 선택)
 
   // ---- 유틸: HTML 이스케이프 (XSS 방지) ----
   const escapeHTML = (str) =>
@@ -187,6 +188,8 @@
   // ---- 정렬·필터 적용 (페이지네이션 초기화) ----
   function applyFilterSort() {
     let list = allArticles.slice();
+    // 출처 필터 (다중 선택). 활성 출처에 속한 기사만 표시
+    list = list.filter((a) => activeProviders.has(a.provider));
     if (refineTerm) {
       const t = refineTerm.toLowerCase();
       list = list.filter((a) => a.title.toLowerCase().includes(t));
@@ -196,18 +199,55 @@
     shownCount = Math.min(PAGE_SIZE, filtered.length);
   }
 
+  // ---- 출처 필터: 결과에 존재하는 출처 목록(고정 순서) ----
+  const PROVIDER_ORDER = ["naver", "rss", "google"];
+  function presentProviders() {
+    const set = new Set(allArticles.map((a) => a.provider).filter(Boolean));
+    return PROVIDER_ORDER.filter((p) => set.has(p));
+  }
+  function providerCount(p) {
+    return allArticles.reduce((n, a) => n + (a.provider === p ? 1 : 0), 0);
+  }
+
+  // 출처 필터 칩 HTML (출처가 2종 이상일 때만 노출)
+  function providerFilterHtml() {
+    const present = presentProviders();
+    if (present.length < 2) return "";
+    const chips = present
+      .map((p) => {
+        const pm = PROVIDER_META[p];
+        const on = activeProviders.has(p);
+        return `<button type="button" class="pfilter${on ? " is-active" : ""}"
+            data-provider="${p}" aria-pressed="${on}" title="${pm.label}">
+            ${pm.svg}<span class="pfilter__name">${pm.short}</span>
+            <span class="pfilter__count">${providerCount(p)}</span>
+          </button>`;
+      })
+      .join("");
+    return `
+      <div class="provider-filter" id="providerFilter" role="group" aria-label="출처 필터">
+        <span class="provider-filter__label">
+          <span class="material-icons-round" aria-hidden="true">filter_list</span>출처
+        </span>
+        ${chips}
+      </div>`;
+  }
+
   // ---- 출처(데이터 제공 경로) 배지 — 브랜드 아이콘 ----
   const PROVIDER_META = {
     naver: {
       label: "네이버 검색",
+      short: "네이버",
       svg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#03C75A"/><path fill="#fff" d="M13.9 12.3 9.7 6H6.2v12h3.9v-6.3l4.2 6.3h3.5V6h-3.9z"/></svg>`,
     },
     rss: {
       label: "신문사 공식 RSS",
+      short: "RSS",
       svg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#EE802F"/><circle cx="7.4" cy="16.6" r="1.7" fill="#fff"/><path fill="#fff" d="M5.7 8.4v2.5a4.7 4.7 0 0 1 4.7 4.7h2.5A7.2 7.2 0 0 0 5.7 8.4z"/><path fill="#fff" d="M5.7 4.8v2.5A8.6 8.6 0 0 1 14.3 16h2.5A11.1 11.1 0 0 0 5.7 4.8z"/></svg>`,
     },
     google: {
       label: "구글 뉴스",
+      short: "구글",
       svg: `<svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.89 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.34A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.94H.96a9 9 0 0 0 0 8.12l3.01-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0A9 9 0 0 0 .96 4.94l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58z"/></svg>`,
     },
   };
@@ -283,6 +323,7 @@
               aria-label="결과 내 검색" autocomplete="off" />
           </div>
         </div>
+        ${providerFilterHtml()}
       </div>
       <p class="results__source">
         <span class="material-icons-round" aria-hidden="true">travel_explore</span>
@@ -310,6 +351,23 @@
         renderGrid();
       }, 200);
     });
+
+    // 출처 필터 토글 (다중 선택, 이벤트 위임)
+    const filterEl = document.getElementById("providerFilter");
+    if (filterEl) {
+      filterEl.addEventListener("click", (e) => {
+        const btn = e.target.closest(".pfilter[data-provider]");
+        if (!btn) return;
+        const p = btn.dataset.provider;
+        if (activeProviders.has(p)) activeProviders.delete(p);
+        else activeProviders.add(p);
+        const on = activeProviders.has(p);
+        btn.classList.toggle("is-active", on);
+        btn.setAttribute("aria-pressed", String(on));
+        applyFilterSort();
+        renderGrid();
+      });
+    }
   }
 
   // ---- 그리드 + 더보기 렌더링 (셸은 유지) ----
@@ -322,10 +380,16 @@
     count.textContent = `${filtered.length}개의 기사`;
 
     if (filtered.length === 0) {
+      const msg =
+        activeProviders.size === 0
+          ? "표시할 출처를 하나 이상 선택해 주세요."
+          : refineTerm
+          ? `결과 내에서 '${escapeHTML(refineTerm)}'에 해당하는 기사가 없어요.`
+          : "선택한 출처에 해당하는 기사가 없어요.";
       grid.innerHTML = `
         <p class="grid__empty">
           <span class="material-icons-round" aria-hidden="true">search_off</span>
-          결과 내에서 '${escapeHTML(refineTerm)}'에 해당하는 기사가 없어요.
+          ${msg}
         </p>`;
       loadMore.innerHTML = "";
       return;
@@ -399,6 +463,7 @@
       saveRecent(keyword);
       refineTerm = "";
       sortOrder = "latest";
+      activeProviders = new Set(presentProviders()); // 모든 출처 기본 활성
       applyFilterSort();
       renderShell();
       renderGrid();

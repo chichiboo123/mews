@@ -152,34 +152,49 @@ async function fetchText(url, ms, options = {}) {
 }
 
 // ── 네이버 뉴스 검색 API (1순위: 검색 + 공식 스니펫) ──────────
+function mapNaverItem(it) {
+  const link = decode(it.originallink || it.link || "");
+  return {
+    title: cleanText(it.title, 0),
+    link,
+    summary: cleanText(it.description, 0), // 네이버 공식 스니펫: 전문 그대로
+    source: sourceFromUrl(link),
+    provider: "naver",
+    pubDate: it.pubDate || "",
+  };
+}
+
+// start로 페이지네이션하여 100개 제한 없이 최대치까지 수집
+// (네이버 제한: display ≤ 100, start ≤ 1000 → 최대 1000개). 결과 소진 시 조기 종료.
 async function fetchNaver(q) {
   if (!NAVER_ID || !NAVER_SECRET) return null; // 미설정 → 폴백 신호
-  const url =
-    `${NAVER_NEWS}?` +
-    new URLSearchParams({ query: q, display: "100", start: "1", sort: "sim" });
-  try {
-    const text = await fetchText(url, 7000, {
-      headers: {
-        "X-Naver-Client-Id": NAVER_ID,
-        "X-Naver-Client-Secret": NAVER_SECRET,
-      },
-    });
-    const data = JSON.parse(text);
-    const items = Array.isArray(data.items) ? data.items : [];
-    return items.map((it) => {
-      const link = decode(it.originallink || it.link || "");
-      return {
-        title: cleanText(it.title, 0),
-        link,
-        summary: cleanText(it.description, 0), // 네이버 공식 스니펫: 전문 그대로
-        source: sourceFromUrl(link),
-        provider: "naver",
-        pubDate: it.pubDate || "",
-      };
-    });
-  } catch (_) {
-    return null; // 호출 실패(401/429 등) → 폴백 신호
+  const headers = {
+    "X-Naver-Client-Id": NAVER_ID,
+    "X-Naver-Client-Secret": NAVER_SECRET,
+  };
+  const PAGE = 100;
+  const MAX_START = 1000;
+  const out = [];
+  let anySuccess = false;
+
+  for (let start = 1; start <= MAX_START; start += PAGE) {
+    const url =
+      `${NAVER_NEWS}?` +
+      new URLSearchParams({ query: q, display: String(PAGE), start: String(start), sort: "sim" });
+    let items;
+    try {
+      const data = JSON.parse(await fetchText(url, 5000, { headers }));
+      items = Array.isArray(data.items) ? data.items : [];
+    } catch (_) {
+      break; // 중간 페이지 실패 → 지금까지 모은 것으로 진행
+    }
+    anySuccess = true;
+    for (const it of items) out.push(mapNaverItem(it));
+    if (items.length < PAGE) break; // 마지막 페이지(더 없음)
   }
+
+  if (!anySuccess) return null; // 첫 호출부터 실패(미설정/401/429) → 폴백 신호
+  return out;
 }
 
 // ── 구글 뉴스 RSS (폴백: 제목·링크·날짜) ─────────────────────
