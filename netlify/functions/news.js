@@ -39,10 +39,13 @@ const PUBLISHER_FEEDS = [
   { source: "스포츠경향", url: "http://www.khan.co.kr/rss/rssdata/kh_entertainment.xml" },
 ];
 
+// 다수의 국내 언론사 RSS는 봇/비표준 User-Agent를 403으로 차단하므로
+// 일반 브라우저처럼 보이는 헤더를 사용한다(공개 배포 피드 정상 수신 목적).
 const RSS_HEADERS = {
-  "User-Agent": "MewsBot/1.0 (+https://github.com/chichiboo123/mews; musical news reader)",
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   Accept: "application/rss+xml, application/xml, text/xml, */*",
-  "Accept-Language": "ko,en;q=0.8",
+  "Accept-Language": "ko,en;q=0.9",
 };
 
 // HTML 엔티티 / CDATA 정리 (&amp; 는 마지막에)

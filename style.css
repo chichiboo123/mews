@@ -817,6 +817,19 @@ button {
   display: block;
   border-radius: 5px;
 }
+/* 공식 요약이 있는 카드 표시 태그 */
+.card__tag {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-leaf);
+  background: var(--color-leaf-soft);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+}
 /* 링크 아이콘은 항상 오른쪽 끝으로 */
 .card__link-icon {
   margin-left: auto;
