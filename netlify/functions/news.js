@@ -17,7 +17,11 @@ const GOOGLE_BASE = "https://news.google.com/rss/search";
 // ── 국내 신문사 공식 RSS (문화/연예/공연 섹션) ──────────────
 // 매체가 syndication(배포) 목적으로 공개한 피드만 사용. 실패해도 나머지로
 // 동작하도록 allSettled + 타임아웃으로 내결함성을 둡니다. 자유롭게 편집하세요.
+// 표시되는 요약은 cleanText(…, 280)로 최대 280자 발췌만 사용합니다(저작권 안전장치).
+// ※ RSS 약관에 "개인 구독·비상업적 사용만 허용"을 명시한 매체(예: 노컷뉴스)는
+//   제외했습니다. 운영 성격(비영리/영리)에 따라 아래 목록을 가감하세요.
 const PUBLISHER_FEEDS = [
+  // 종합지 문화·연예
   { source: "경향신문", url: "https://www.khan.co.kr/rss/rssdata/culture_news.xml" },
   { source: "경향신문", url: "https://www.khan.co.kr/rss/rssdata/entertain_news.xml" },
   { source: "한겨레", url: "https://www.hani.co.kr/rss/culture/" },
@@ -26,7 +30,13 @@ const PUBLISHER_FEEDS = [
   { source: "한국경제", url: "https://www.hankyung.com/feed/culture" },
   { source: "한국경제", url: "https://www.hankyung.com/feed/entertainment" },
   { source: "서울신문", url: "https://www.seoul.co.kr/xml/rss/rss_culture.xml" },
+  { source: "서울신문", url: "https://www.seoul.co.kr/xml/rss/rss_entertainment.xml" },
   { source: "헤럴드경제", url: "http://biz.heraldcorp.com/rss/010100000000.xml" },
+  // 공연·뮤지컬 커버리지 보강 (문화·연예 전문 섹션)
+  { source: "오마이뉴스", url: "https://rss.ohmynews.com/rss/culture.xml" },
+  { source: "이데일리", url: "http://rss.edaily.co.kr/happypot_news.xml" }, // 문화/생활
+  { source: "이데일리", url: "http://rss.edaily.co.kr/spn_news.xml" }, // 스타in(연예)
+  { source: "스포츠경향", url: "http://www.khan.co.kr/rss/rssdata/kh_entertainment.xml" },
 ];
 
 const RSS_HEADERS = {
