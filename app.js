@@ -196,13 +196,28 @@
     shownCount = Math.min(PAGE_SIZE, filtered.length);
   }
 
+  // ---- 출처(데이터 제공 경로) 배지 메타 ----
+  const PROVIDER_META = {
+    naver: { label: "네이버 검색", icon: "search" },
+    rss: { label: "공식 RSS", icon: "rss_feed" },
+    google: { label: "구글 뉴스", icon: "travel_explore" },
+  };
+
   // ---- 카드 HTML ----
   function cardHtml(a, i = 0) {
     const safeLink = escapeHTML(a.link);
 
-    // 신문사 RSS가 배포한 공식 요약이 있을 때만 표시
+    // 네이버 공식 스니펫 / 신문사 RSS 요약이 있을 때만 표시 (전문 그대로)
     const summaryBlock = a.summary
       ? `<p class="card__summary">${escapeHTML(a.summary)}</p>`
+      : "";
+
+    // 데이터가 어느 경로로 수집됐는지 배지로 표기 (출처·신빙성 구분)
+    const pm = PROVIDER_META[a.provider];
+    const providerBadge = pm
+      ? `<span class="card__provider card__provider--${a.provider}" title="${pm.label}에서 가져온 기사">
+           <span class="material-icons-round" aria-hidden="true">${pm.icon}</span>${pm.label}
+         </span>`
       : "";
 
     // 그리드 내 위치 기준 진입 애니메이션 지연 (과하지 않게 캡)
@@ -217,6 +232,7 @@
             <span class="material-icons-round" aria-hidden="true">newspaper</span>
             ${escapeHTML(a.source)}
           </span>
+          ${providerBadge}
           <span class="card__link-icon" aria-hidden="true">
             <span class="material-icons-round">open_in_new</span>
           </span>
@@ -367,6 +383,7 @@
           link: (a.link || "").trim(),
           source: (a.source || "뉴스").trim(),
           summary: (a.summary || "").trim(),
+          provider: a.provider || "",
           date: formatDate(a.pubDate),
           ms: Number.isNaN(ms) ? 0 : ms,
         };
