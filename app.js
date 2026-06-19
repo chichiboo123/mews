@@ -1,7 +1,7 @@
 /* =========================================================
    뮤스 (Mews) — Musical News
-   Netlify Function(news)을 통해 구글 뉴스 검색 + 국내 신문사 공식 RSS를
-   합쳐 카드 형태로 렌더링합니다. (공식 요약 · 정렬 · 더보기 · 결과 내 검색)
+   Netlify Function(news)을 통해 네이버 뉴스 검색 API + 국내 신문사 공식
+   RSS를 합쳐 카드 형태로 렌더링합니다. (공식 요약 · 정렬 · 더보기 · 결과 내 검색)
    ========================================================= */
 
 (() => {
@@ -263,7 +263,7 @@
       </div>
       <p class="results__source">
         <span class="material-icons-round" aria-hidden="true">travel_explore</span>
-        구글 뉴스 검색과 국내 신문사 공식 RSS를 기반으로 제공됩니다.
+        네이버 뉴스 검색과 국내 신문사 공식 RSS를 기반으로 제공됩니다.
       </p>
       <div class="grid" id="grid"></div>
       <div class="load-more" id="loadMore"></div>`;
