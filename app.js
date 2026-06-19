@@ -196,11 +196,20 @@
     shownCount = Math.min(PAGE_SIZE, filtered.length);
   }
 
-  // ---- 출처(데이터 제공 경로) 배지 메타 ----
+  // ---- 출처(데이터 제공 경로) 배지 — 브랜드 아이콘 ----
   const PROVIDER_META = {
-    naver: { label: "네이버 검색", icon: "search" },
-    rss: { label: "공식 RSS", icon: "rss_feed" },
-    google: { label: "구글 뉴스", icon: "travel_explore" },
+    naver: {
+      label: "네이버 검색",
+      svg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#03C75A"/><path fill="#fff" d="M13.9 12.3 9.7 6H6.2v12h3.9v-6.3l4.2 6.3h3.5V6h-3.9z"/></svg>`,
+    },
+    rss: {
+      label: "신문사 공식 RSS",
+      svg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#EE802F"/><circle cx="7.4" cy="16.6" r="1.7" fill="#fff"/><path fill="#fff" d="M5.7 8.4v2.5a4.7 4.7 0 0 1 4.7 4.7h2.5A7.2 7.2 0 0 0 5.7 8.4z"/><path fill="#fff" d="M5.7 4.8v2.5A8.6 8.6 0 0 1 14.3 16h2.5A11.1 11.1 0 0 0 5.7 4.8z"/></svg>`,
+    },
+    google: {
+      label: "구글 뉴스",
+      svg: `<svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.89 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.34A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.94H.96a9 9 0 0 0 0 8.12l3.01-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0A9 9 0 0 0 .96 4.94l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58z"/></svg>`,
+    },
   };
 
   // ---- 카드 HTML ----
@@ -212,12 +221,10 @@
       ? `<p class="card__summary">${escapeHTML(a.summary)}</p>`
       : "";
 
-    // 데이터가 어느 경로로 수집됐는지 배지로 표기 (출처·신빙성 구분)
+    // 데이터 수집 경로를 브랜드 아이콘으로만 간단히 표기 (출처·신빙성 구분)
     const pm = PROVIDER_META[a.provider];
     const providerBadge = pm
-      ? `<span class="card__provider card__provider--${a.provider}" title="${pm.label}에서 가져온 기사">
-           <span class="material-icons-round" aria-hidden="true">${pm.icon}</span>${pm.label}
-         </span>`
+      ? `<span class="card__provider" title="${pm.label}" aria-label="출처: ${pm.label}">${pm.svg}</span>`
       : "";
 
     // 그리드 내 위치 기준 진입 애니메이션 지연 (과하지 않게 캡)

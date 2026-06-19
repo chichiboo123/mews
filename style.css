@@ -724,8 +724,8 @@ button {
   gap: 5px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--color-leaf);
-  background: var(--color-leaf-soft);
+  color: var(--color-night-strong);
+  background: var(--color-night-soft);
   padding: 4px 10px;
   border-radius: var(--radius-pill);
   max-width: 55%;
@@ -737,35 +737,18 @@ button {
   font-size: 0.95rem;
 }
 
-/* 데이터 제공 경로 배지 (네이버 검색 / 공식 RSS / 구글 뉴스) */
+/* 데이터 제공 경로 배지 — 브랜드 아이콘만 간단히 표시 */
 .card__provider {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: var(--radius-pill);
-  white-space: nowrap;
-  border: 1px solid transparent;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+  opacity: 0.95;
 }
-.card__provider .material-icons-round {
-  font-size: 0.9rem;
-}
-.card__provider--naver {
-  color: #057a3a;
-  background: rgba(3, 199, 90, 0.12);
-  border-color: rgba(3, 199, 90, 0.3);
-}
-.card__provider--rss {
-  color: #b25e00;
-  background: rgba(244, 140, 6, 0.12);
-  border-color: rgba(244, 140, 6, 0.3);
-}
-.card__provider--google {
-  color: var(--color-night);
-  background: rgba(91, 111, 156, 0.14);
-  border-color: rgba(91, 111, 156, 0.3);
+.card__provider svg {
+  display: block;
+  border-radius: 5px;
 }
 /* 링크 아이콘은 항상 오른쪽 끝으로 */
 .card__link-icon {
