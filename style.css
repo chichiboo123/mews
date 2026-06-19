@@ -635,6 +635,73 @@ button {
   color: var(--color-text-faint);
 }
 
+/* 출처 필터 (네이버 / RSS / 구글 · 다중 선택) */
+.provider-filter {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.provider-filter__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-soft);
+}
+.provider-filter__label .material-icons-round {
+  font-size: 1.05rem;
+  color: var(--color-night);
+}
+.pfilter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px 5px 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+.pfilter svg {
+  display: block;
+  border-radius: 5px;
+}
+.pfilter__count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-soft);
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+}
+.pfilter:hover {
+  opacity: 0.8;
+}
+.pfilter.is-active {
+  opacity: 1;
+  border-color: var(--color-night);
+  background: var(--color-night-soft);
+}
+.pfilter.is-active .pfilter__count {
+  color: var(--color-night-strong);
+  background: var(--color-surface);
+}
+.pfilter:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-night-soft);
+  opacity: 1;
+}
+
 /* 출처 안내 */
 .results__source {
   display: flex;
