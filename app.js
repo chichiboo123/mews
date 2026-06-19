@@ -1,7 +1,7 @@
 /* =========================================================
    뮤스 (Mews) — Musical News
-   Netlify Functions(news / summary)를 통해 구글 뉴스를 가져와
-   카드 형태로 렌더링합니다. (요약 · 정렬 · 더보기 · 결과 내 검색)
+   Netlify Function(news)을 통해 구글 뉴스 검색 + 국내 신문사 공식 RSS를
+   합쳐 카드 형태로 렌더링합니다. (공식 요약 · 정렬 · 더보기 · 결과 내 검색)
    ========================================================= */
 
 (() => {
@@ -34,7 +34,6 @@
   let sortOrder = "latest"; // latest | oldest
   let refineTerm = ""; // 결과 내 검색어
   let currentKeyword = ""; // 표시용 키워드
-  const summaryCache = new Map(); // link -> 요약(빈 문자열 포함)
 
   // ---- 유틸: HTML 이스케이프 (XSS 방지) ----
   const escapeHTML = (str) =>
@@ -200,15 +199,11 @@
   // ---- 카드 HTML ----
   function cardHtml(a, i = 0) {
     const safeLink = escapeHTML(a.link);
-    const cached = summaryCache.get(a.link); // undefined=미로딩, ''=결과없음
-    const needs = cached === undefined;
 
-    let summaryBlock = "";
-    if (needs) {
-      summaryBlock = `<p class="card__summary card__summary--loading" aria-hidden="true"></p>`;
-    } else if (cached) {
-      summaryBlock = `<p class="card__summary">${escapeHTML(cached)}</p>`;
-    }
+    // 신문사 RSS가 배포한 공식 요약이 있을 때만 표시
+    const summaryBlock = a.summary
+      ? `<p class="card__summary">${escapeHTML(a.summary)}</p>`
+      : "";
 
     // 그리드 내 위치 기준 진입 애니메이션 지연 (과하지 않게 캡)
     const delay = Math.min(i, PAGE_SIZE - 1) * 45;
@@ -216,7 +211,7 @@
     return `
       <a class="card" href="${safeLink}" target="_blank" rel="noopener noreferrer"
          style="--card-delay:${delay}ms"
-         data-link="${safeLink}"${needs ? " data-needs-summary" : ""}>
+         data-link="${safeLink}">
         <div class="card__top">
           <span class="card__source" title="${escapeHTML(a.source)}">
             <span class="material-icons-round" aria-hidden="true">newspaper</span>
@@ -268,7 +263,7 @@
       </div>
       <p class="results__source">
         <span class="material-icons-round" aria-hidden="true">travel_explore</span>
-        Google 뉴스 검색 결과를 기반으로 제공됩니다.
+        구글 뉴스 검색과 국내 신문사 공식 RSS를 기반으로 제공됩니다.
       </p>
       <div class="grid" id="grid"></div>
       <div class="load-more" id="loadMore"></div>`;
@@ -330,57 +325,6 @@
     } else {
       loadMore.innerHTML = "";
     }
-
-    loadSummaries();
-  }
-
-  // ---- 요약 지연 로딩 (현재 그리드의 카드만, 동시 4개) ----
-  async function loadSummaries() {
-    const els = [...document.querySelectorAll(".card[data-needs-summary]")];
-    if (els.length === 0) return;
-
-    let i = 0;
-    const worker = async () => {
-      while (i < els.length) {
-        const el = els[i++];
-        el.removeAttribute("data-needs-summary");
-        const link = el.dataset.link;
-
-        let text = summaryCache.get(link);
-        if (text === undefined) {
-          text = await fetchSummary(link);
-          summaryCache.set(link, text);
-        }
-        applySummary(el, text);
-      }
-    };
-
-    await Promise.all(Array.from({ length: 4 }, worker));
-  }
-
-  async function fetchSummary(link) {
-    try {
-      const res = await fetch(
-        `/.netlify/functions/summary?url=${encodeURIComponent(link)}`
-      );
-      if (!res.ok) return "";
-      const data = await res.json();
-      return (data.summary || "").trim();
-    } catch (_) {
-      return "";
-    }
-  }
-
-  function applySummary(el, text) {
-    const p = el.querySelector(".card__summary");
-    if (!p) return;
-    if (text) {
-      p.textContent = text;
-      p.classList.remove("card__summary--loading");
-      p.removeAttribute("aria-hidden");
-    } else {
-      p.remove();
-    }
   }
 
   // ---- 검색 실행 ----
@@ -421,7 +365,8 @@
         return {
           title: cleanTitle(a.title, a.source),
           link: (a.link || "").trim(),
-          source: (a.source || "구글 뉴스").trim(),
+          source: (a.source || "뉴스").trim(),
+          summary: (a.summary || "").trim(),
           date: formatDate(a.pubDate),
           ms: Number.isNaN(ms) ? 0 : ms,
         };
