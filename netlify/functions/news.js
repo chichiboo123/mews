@@ -128,8 +128,9 @@ async function fetchNaver(q) {
       return {
         title: cleanText(it.title, 0),
         link,
-        summary: cleanText(it.description, 200),
+        summary: cleanText(it.description, 0), // 네이버 공식 스니펫: 전문 그대로
         source: sourceFromUrl(link),
+        provider: "naver",
         pubDate: it.pubDate || "",
       };
     });
@@ -151,6 +152,7 @@ function parseGoogleItems(xml) {
       pubDate: tag(chunk, "pubDate"),
       source: decode(tag(chunk, "source")),
       summary: "",
+      provider: "google",
     });
   }
   return items;
@@ -184,9 +186,10 @@ function parsePublisherItems(xml, source) {
     items.push({
       title,
       link: decode(tag(chunk, "link")) || decode(tag(chunk, "guid")),
-      summary: cleanText(tag(chunk, "description"), 200),
+      summary: cleanText(tag(chunk, "description"), 280),
       pubDate: tag(chunk, "pubDate") || tag(chunk, "dc:date"),
       source,
+      provider: "rss",
     });
   }
   return items;

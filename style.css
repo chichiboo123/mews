@@ -654,6 +654,7 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
+  align-items: start; /* 요약 전문 표시로 카드 높이가 가변 → 위 정렬 */
 }
 
 .card {
@@ -713,8 +714,8 @@ button {
 .card__top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-bottom: 12px;
 }
 .card__source {
@@ -727,13 +728,48 @@ button {
   background: var(--color-leaf-soft);
   padding: 4px 10px;
   border-radius: var(--radius-pill);
-  max-width: 70%;
+  max-width: 55%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .card__source .material-icons-round {
   font-size: 0.95rem;
+}
+
+/* 데이터 제공 경로 배지 (네이버 검색 / 공식 RSS / 구글 뉴스) */
+.card__provider {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.card__provider .material-icons-round {
+  font-size: 0.9rem;
+}
+.card__provider--naver {
+  color: #057a3a;
+  background: rgba(3, 199, 90, 0.12);
+  border-color: rgba(3, 199, 90, 0.3);
+}
+.card__provider--rss {
+  color: #b25e00;
+  background: rgba(244, 140, 6, 0.12);
+  border-color: rgba(244, 140, 6, 0.3);
+}
+.card__provider--google {
+  color: var(--color-night);
+  background: rgba(91, 111, 156, 0.14);
+  border-color: rgba(91, 111, 156, 0.3);
+}
+/* 링크 아이콘은 항상 오른쪽 끝으로 */
+.card__link-icon {
+  margin-left: auto;
 }
 .card__link-icon {
   display: inline-flex;
@@ -773,10 +809,8 @@ button {
   font-size: 0.88rem;
   line-height: 1.55;
   color: var(--color-text-soft);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  white-space: pre-line; /* 요약 전문 그대로 표시 (줄 제한 없음) */
+  word-break: break-word;
 }
 /* 요약 로딩 스켈레톤 */
 .card__summary--loading {
