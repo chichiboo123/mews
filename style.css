@@ -234,12 +234,17 @@ button {
   align-items: baseline;
   gap: 10px;
   color: var(--color-text);
+  font-family: 'Noto Serif KR', 'Batang', Georgia, serif;
+  font-weight: 900;
+  letter-spacing: -0.02em;
 }
 .header__name-en {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-style: italic;
   color: var(--color-rose);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
 }
 .header__tagline {
   margin: 14px 0 0;
@@ -1094,6 +1099,23 @@ button {
 }
 
 /* ---------- Responsive ---------- */
+/* ---------- PC: 테마 토글 헤더 내 자연 배치 ---------- */
+@media (min-width: 521px) {
+  .header {
+    padding-top: 28px;
+  }
+  .header__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .theme-toggle {
+    position: static;
+    align-self: flex-end;
+    margin-bottom: 12px;
+  }
+}
+
 @media (max-width: 520px) {
   .header {
     padding-top: 40px;

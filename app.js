@@ -34,6 +34,7 @@
   let sortOrder = "latest"; // latest | oldest
   let refineTerm = ""; // 결과 내 검색어
   let currentKeyword = ""; // 표시용 키워드
+  let currentAndKeywords = []; // & 연산자로 분리된 AND 검색 키워드
   let activeProviders = new Set(); // 활성화된 출처 필터 (다중 선택)
 
   // ---- 유틸: HTML 이스케이프 (XSS 방지) ----
@@ -190,6 +191,14 @@
     let list = allArticles.slice();
     // 출처 필터 (다중 선택). 활성 출처에 속한 기사만 표시
     list = list.filter((a) => activeProviders.has(a.provider));
+    // & AND 필터: 모든 키워드가 제목에 포함된 기사만 표시
+    if (currentAndKeywords.length > 1) {
+      list = list.filter((a) =>
+        currentAndKeywords.every((k) =>
+          a.title.toLowerCase().includes(k.toLowerCase())
+        )
+      );
+    }
     if (refineTerm) {
       const t = refineTerm.toLowerCase();
       list = list.filter((a) => a.title.toLowerCase().includes(t));
@@ -385,6 +394,8 @@
           ? "표시할 출처를 하나 이상 선택해 주세요."
           : refineTerm
           ? `결과 내에서 '${escapeHTML(refineTerm)}'에 해당하는 기사가 없어요.`
+          : currentAndKeywords.length > 1
+          ? `'${currentAndKeywords.map(escapeHTML).join("' & '")}' 조건을 모두 포함한 기사가 없어요.`
           : "선택한 출처에 해당하는 기사가 없어요.";
       grid.innerHTML = `
         <p class="grid__empty">
@@ -424,9 +435,19 @@
       return;
     }
 
+    // & 연산자 파싱: "A&B" → 두 키워드를 모두 포함한 기사만 표시
+    const andKeywords = keyword.split("&").map((k) => k.trim()).filter(Boolean);
+    if (andKeywords.length === 0) {
+      input.focus();
+      return;
+    }
+
     currentKeyword = keyword;
+    currentAndKeywords = andKeywords;
     syncResetButton();
-    const encoded = encodeURIComponent(`${keyword} 뮤지컬`); // 검색 품질 향상
+    // 서버에는 키워드를 공백으로 연결 (네이버 API는 공백 = AND)
+    const serverQuery = andKeywords.join(" ");
+    const encoded = encodeURIComponent(`${serverQuery} 뮤지컬`); // 검색 품질 향상
 
     if (activeController) activeController.abort();
     activeController = new AbortController();
@@ -483,6 +504,7 @@
     sortOrder = "latest";
     refineTerm = "";
     currentKeyword = "";
+    currentAndKeywords = [];
     input.value = "";
     syncResetButton();
     showIntro();
